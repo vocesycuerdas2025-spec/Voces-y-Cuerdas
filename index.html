@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -29,9 +28,19 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
     </style>
 </head>
-<body class="pb-20">
+<body class="pb-24">
 
     <!-- Header -->
     <header class="header-gradient text-white p-6 rounded-b-3xl shadow-lg mb-6">
@@ -40,129 +49,181 @@
                 <h1 class="text-2xl font-bold text-white">Voces y Cuerdas</h1>
                 <p class="text-blue-200 text-sm italic">Banda de Música - Policía Nacional</p>
             </div>
-            <div class="bg-white/10 p-2 rounded-full shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+            <div class="flex gap-2">
+                <button onclick="downloadBackup()" class="bg-white/10 p-2 rounded-full hover:bg-white/20 transition-all" title="Descargar Respaldo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                </button>
+                <div class="bg-white/10 p-2 rounded-full shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                </div>
             </div>
         </div>
     </header>
 
     <main class="px-4 max-w-lg mx-auto">
-        <!-- Search -->
+        <!-- Botón Añadir Integrante -->
+        <button onclick="openMemberModal()" class="w-full mb-6 p-4 bg-blue-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Añadir Nueva Unidad
+        </button>
+
+        <!-- Buscador -->
         <div class="mb-6">
-            <input type="text" id="searchInput" placeholder="Buscar unidad o posición..." 
+            <input type="text" id="searchInput" placeholder="Buscar unidad o rango..." 
                 class="w-full p-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 onkeyup="filterList()">
         </div>
 
-        <!-- Global Stats -->
+        <!-- Estadísticas Globales -->
         <div class="grid grid-cols-2 gap-4 mb-6 text-center">
-            <div class="bg-white p-4 rounded-2xl card-shadow">
+            <div class="bg-white p-4 rounded-2xl card-shadow border-t-4 border-blue-900">
                 <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">Total Unidades</p>
-                <p class="text-2xl font-black text-blue-900">19</p>
+                <p id="totalUnitsCount" class="text-2xl font-black text-blue-900">0</p>
             </div>
-            <div class="bg-white p-4 rounded-2xl card-shadow">
+            <div class="bg-white p-4 rounded-2xl card-shadow border-t-4 border-emerald-500">
                 <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">Saldo Global</p>
-                <p id="totalGlobalDays" class="text-2xl font-black text-amber-600">0</p>
+                <p id="totalGlobalDays" class="text-2xl font-black text-emerald-600">0</p>
             </div>
         </div>
 
-        <!-- Member List -->
+        <!-- Lista de Integrantes -->
         <div id="memberList" class="space-y-4">
-            <!-- Items injected by JS -->
+            <!-- Los elementos se inyectan mediante JS -->
         </div>
     </main>
 
-    <!-- Modal for Events/History -->
-    <div id="eventModal" class="fixed inset-0 bg-black/60 hidden flex-col justify-end sm:justify-center p-0 sm:p-4 z-50">
-        <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl overflow-y-auto max-h-[95vh]">
-            <div class="flex justify-between items-start mb-4">
+    <!-- Notificaciones -->
+    <div id="notification" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl opacity-0 pointer-events-none transition-all z-[100]">
+        Mensaje
+    </div>
+
+    <!-- Modal de Detalles e Historial -->
+    <div id="eventModal" class="fixed inset-0 bg-black/60 hidden flex-col justify-end sm:justify-center p-0 sm:p-4 z-50 overflow-hidden">
+        <div class="bg-white w-full max-w-lg mx-auto rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-start">
                 <div>
-                    <h2 id="modalTitle" class="text-xl font-bold text-gray-800 tracking-tight">Nombre de la Unidad</h2>
+                    <h2 id="modalTitle" class="text-xl font-bold text-gray-800 tracking-tight">Nombre</h2>
                     <p id="modalSub" class="text-sm text-gray-500 font-medium"></p>
                 </div>
-                <button onclick="closeModal()" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
+                <button onclick="closeModal('eventModal')" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
-
-            <!-- Enhanced Automated New Event Form -->
-            <div id="formSection" class="bg-blue-50 p-4 rounded-2xl mb-6 border border-blue-100">
-                <h3 id="formActionTitle" class="text-xs font-black text-blue-800 mb-4 uppercase tracking-widest">Registrar Movimiento</h3>
-                <div class="space-y-4">
-                    <div id="typeSelectorCont">
-                        <label class="text-[10px] uppercase font-black text-gray-400 px-1">Acción</label>
-                        <select id="eventType" class="w-full p-3 mt-1 rounded-xl border-none outline-none bg-white font-bold text-gray-700 shadow-sm" onchange="toggleInputs()">
+            <div class="overflow-y-auto p-6 flex-grow">
+                <!-- Formulario de Movimiento (Añadir/Editar) -->
+                <div id="formSection" class="bg-blue-50 p-4 rounded-2xl mb-6 border border-blue-100">
+                    <h3 id="formActionTitle" class="text-xs font-black text-blue-800 mb-4 uppercase tracking-widest">Registrar Movimiento</h3>
+                    <div class="space-y-4">
+                        <select id="eventType" class="w-full p-3 rounded-xl border-none outline-none font-bold text-gray-700 shadow-sm focus:ring-2 focus:ring-blue-500" onchange="toggleInputs()">
                             <option value="sumar">Día Trabajado (+1)</option>
                             <option value="restar">Día Libre Tomado (-1)</option>
                         </select>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-3">
-                        <div>
-                            <label class="text-[10px] uppercase font-black text-gray-400 px-1">Fecha</label>
-                            <input type="date" id="eventDate" class="w-full p-3 mt-1 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
-                        </div>
-                        
-                        <!-- These fields will toggle visibility based on action -->
-                        <div id="extraFields" class="space-y-3">
-                            <div id="descContainer">
-                                <label class="text-[10px] uppercase font-black text-gray-400 px-1">Nombre del Evento / Detalle</label>
-                                <input type="text" id="eventDesc" placeholder="Ej: Gala de Aniversario" class="w-full p-3 mt-1 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
-                            </div>
-
-                            <div id="groupContainer">
-                                <label class="text-[10px] uppercase font-black text-gray-400 px-1">Agrupación Musical</label>
-                                <input type="text" id="eventGroup" placeholder="Ej: Orquesta, Murga, etc." class="w-full p-3 mt-1 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
-                            </div>
-
-                            <div id="placeContainer">
-                                <label class="text-[10px] uppercase font-black text-gray-400 px-1">Lugar del Evento</label>
-                                <input type="text" id="eventPlace" placeholder="Ej: Teatro Nacional" class="w-full p-3 mt-1 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <div class="grid grid-cols-1 gap-3">
+                            <input type="date" id="eventDate" class="w-full p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                            <div id="extraFields" class="space-y-3">
+                                <input type="text" id="eventDesc" placeholder="Detalle del Evento (Ej: Acto Protocolar)" class="w-full p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                                <input type="text" id="eventGroup" placeholder="Agrupación (Ej: Orquesta, Cuarteto)" class="w-full p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
                             </div>
                         </div>
-                    </div>
-
-                    <div class="flex gap-2 pt-2">
-                        <button id="cancelEditBtn" onclick="resetForm()" class="hidden flex-1 py-4 bg-gray-200 text-gray-600 rounded-xl font-black uppercase text-xs tracking-widest">Cancelar</button>
-                        <button id="submitBtn" onclick="addOrUpdateEvent()" class="flex-[2] py-4 bg-blue-900 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-blue-800 active:scale-95 transition-all">
-                            Guardar Registro
-                        </button>
+                        <div class="flex gap-2 pt-2">
+                            <button id="cancelEventEditBtn" onclick="resetEventForm()" class="hidden flex-1 py-4 bg-gray-200 text-gray-600 rounded-xl font-black uppercase text-xs tracking-widest transition-all">Cancelar</button>
+                            <button onclick="addOrUpdateEvent()" class="flex-[2] py-4 bg-blue-900 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg hover:bg-blue-800 active:scale-95 transition-all">
+                                Guardar Registro
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- History List -->
-            <div>
-                <h3 class="text-xs font-black text-gray-400 mb-3 uppercase tracking-widest">Historial Detallado</h3>
-                <div id="historyList" class="space-y-3">
-                    <!-- Events here -->
+                <!-- Lista de Historial -->
+                <div>
+                    <h3 class="text-xs font-black text-gray-400 mb-3 uppercase tracking-widest flex justify-between">
+                        <span>Historial Detallado</span>
+                        <span id="historyCount" class="text-blue-600">0 registros</span>
+                    </h3>
+                    <div id="historyList" class="space-y-3 pb-6"></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal para Añadir/Editar Integrante -->
+    <div id="memberModal" class="fixed inset-0 bg-black/60 hidden flex-col justify-end sm:justify-center p-0 sm:p-4 z-50 overflow-hidden">
+        <div class="bg-white w-full max-w-md mx-auto rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h2 id="memberModalTitle" class="text-xl font-bold text-gray-800 tracking-tight">Nueva Unidad</h2>
+                <button onclick="closeModal('memberModal')" class="p-2 bg-gray-100 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="editMemberId">
+                <div>
+                    <label class="text-[10px] uppercase font-black text-gray-400">Rango / Título</label>
+                    <select id="newRango" class="w-full p-3 mt-1 rounded-xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Mayor">Mayor</option>
+                        <option value="Capitán">Capitán</option>
+                        <option value="Teniente">Teniente</option>
+                        <option value="Subteniente">Subteniente</option>
+                        <option value="Sargento 1ro.">Sargento 1ro.</option>
+                        <option value="Sargento 2do.">Sargento 2do.</option>
+                        <option value="Cabo 1ro.">Cabo 1ro.</option>
+                        <option value="Cabo 2do.">Cabo 2do.</option>
+                        <option value="Agente">Agente</option>
+                        <option value="M.N.J.">M.N.J.</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase font-black text-gray-400">Nombre Completo</label>
+                    <input type="text" id="newNombre" placeholder="Nombre de la unidad" class="w-full p-3 mt-1 rounded-xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div id="tipoContainer">
+                    <label class="text-[10px] uppercase font-black text-gray-400">Tipo de Personal</label>
+                    <select id="newTipo" class="w-full p-3 mt-1 rounded-xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="U">Uniformado (Azul)</option>
+                        <option value="C">Civil / MNJ (Amarillo)</option>
+                    </select>
+                </div>
+                <button id="saveMemberBtn" onclick="saveMember()" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-xs tracking-widest shadow-lg active:scale-95 transition-all">
+                    Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Data State with Persistence Logic
+        // Mapa de Jerarquía para el ordenamiento (Peso menor = Mayor jerarquía)
+        const jerarquiaPesos = {
+            "Mayor": 1,
+            "Capitán": 2,
+            "Teniente": 3,
+            "Subteniente": 4,
+            "Sargento 1ro.": 5,
+            "Sargento 2do.": 6,
+            "Cabo 1ro.": 7,
+            "Cabo 2do.": 8,
+            "Agente": 9,
+            "M.N.J.": 10
+        };
+
         const defaultMembers = [
-            { id: 1, pos: 1, rango: "Subteniente", nombre: "Arnides Ceballos", tipo: "U", eventos: [] },
-            { id: 2, pos: 2, rango: "Subteniente", nombre: "Fernando Brewster", tipo: "U", eventos: [] },
-            { id: 3, pos: 3, rango: "Subteniente", nombre: "Brenda Tamayo", tipo: "U", eventos: [] },
-            { id: 4, pos: 4, rango: "Sargento 1ro.", nombre: "Adrián Julio", tipo: "U", eventos: [] },
-            { id: 5, pos: 5, rango: "Agente", nombre: "Ariadna Díaz", tipo: "U", eventos: [] },
-            { id: 6, pos: 6, rango: "M.N.J.", nombre: "Moisés Capuro", tipo: "C", eventos: [] },
-            { id: 7, pos: 7, rango: "M.N.J.", nombre: "Edwin Rosedo", tipo: "C", eventos: [] },
-            { id: 8, pos: 8, rango: "M.N.J.", nombre: "Antonio Jamerson", tipo: "C", eventos: [] },
-            { id: 9, pos: 9, rango: "M.N.J.", nombre: "Rogelio Palmer", tipo: "C", eventos: [] },
-            { id: 10, pos: 10, rango: "M.N.J.", nombre: "Bolívar Román", tipo: "C", eventos: [] },
-            { id: 11, pos: 11, rango: "M.N.J.", nombre: "Alberto Henríquez", tipo: "C", eventos: [] },
-            { id: 12, pos: 12, rango: "M.N.J.", nombre: "Cesar Hand", tipo: "C", eventos: [] },
-            { id: 13, pos: 13, rango: "M.N.J.", nombre: "Estela Guillén", tipo: "C", eventos: [] },
-            { id: 14, pos: 14, rango: "M.N.J.", nombre: "Giovanni Mendoza", tipo: "C", eventos: [] },
-            { id: 15, pos: 15, rango: "M.N.J.", nombre: "Alfredo Pineda", tipo: "C", eventos: [] },
-            { id: 16, pos: 16, rango: "M.N.J.", nombre: "Carlos Ramos", tipo: "C", eventos: [] },
-            { id: 17, pos: 17, rango: "M.N.J.", nombre: "Carlos Berna", tipo: "C", eventos: [] },
-            { id: 18, pos: 18, rango: "M.N.J.", nombre: "Felipe Pineda", tipo: "C", eventos: [] },
-            { id: 19, pos: 19, rango: "M.N.J.", nombre: "Jonathan Martinez", tipo: "C", eventos: [] },
+            { id: 1, rango: "Subteniente", nombre: "Arnides Ceballos", tipo: "U", eventos: [] },
+            { id: 2, rango: "Subteniente", nombre: "Fernando Brewster", tipo: "U", eventos: [] },
+            { id: 3, rango: "Subteniente", nombre: "Brenda Tamayo", tipo: "U", eventos: [] },
+            { id: 4, rango: "Sargento 1ro.", nombre: "Adrián Julio", tipo: "U", eventos: [] },
+            { id: 5, rango: "Agente", nombre: "Ariadna Díaz", tipo: "U", eventos: [] },
+            { id: 6, rango: "M.N.J.", nombre: "Moisés Capuro", tipo: "C", eventos: [] },
+            { id: 7, rango: "M.N.J.", nombre: "Edwin Rosedo", tipo: "C", eventos: [] },
+            { id: 8, rango: "M.N.J.", nombre: "Antonio Jamerson", tipo: "C", eventos: [] },
+            { id: 9, rango: "M.N.J.", nombre: "Rogelio Palmer", tipo: "C", eventos: [] },
+            { id: 10, rango: "M.N.J.", nombre: "Bolívar Román", tipo: "C", eventos: [] },
+            { id: 11, rango: "M.N.J.", nombre: "Alberto Henríquez", tipo: "C", eventos: [] },
+            { id: 12, rango: "M.N.J.", nombre: "Cesar Hand", tipo: "C", eventos: [] },
+            { id: 13, rango: "M.N.J.", nombre: "Estela Guillén", tipo: "C", eventos: [] },
+            { id: 14, rango: "M.N.J.", nombre: "Giovanni Mendoza", tipo: "C", eventos: [] },
+            { id: 15, rango: "M.N.J.", nombre: "Alfredo Pineda", tipo: "C", eventos: [] },
+            { id: 16, rango: "M.N.J.", nombre: "Carlos Ramos", tipo: "C", eventos: [] },
+            { id: 17, rango: "M.N.J.", nombre: "Carlos Berna", tipo: "C", eventos: [] },
+            { id: 18, rango: "M.N.J.", nombre: "Felipe Pineda", tipo: "C", eventos: [] },
+            { id: 19, rango: "M.N.J.", nombre: "Jonathan Martinez", tipo: "C", eventos: [] },
         ];
 
         let members = JSON.parse(localStorage.getItem('vocesCuerdasData')) || defaultMembers;
@@ -170,6 +231,17 @@
         let currentEditingEventId = null;
 
         function saveData() {
+            // Antes de guardar, siempre ordenamos por jerarquía
+            members.sort((a, b) => {
+                const pesoA = jerarquiaPesos[a.rango] || 99;
+                const pesoB = jerarquiaPesos[b.rango] || 99;
+                
+                // Si tienen diferente jerarquía, ordenar por el peso definido
+                if (pesoA !== pesoB) return pesoA - pesoB;
+                
+                // Si tienen la misma jerarquía, ordenar alfabéticamente por nombre
+                return a.nombre.localeCompare(b.nombre);
+            });
             localStorage.setItem('vocesCuerdasData', JSON.stringify(members));
         }
 
@@ -182,34 +254,119 @@
             list.innerHTML = '';
             let totalGlobal = 0;
 
-            members.forEach(m => {
+            // Aseguramos que la lista esté ordenada al renderizar
+            members.sort((a, b) => {
+                const pesoA = jerarquiaPesos[a.rango] || 99;
+                const pesoB = jerarquiaPesos[b.rango] || 99;
+                if (pesoA !== pesoB) return pesoA - pesoB;
+                return a.nombre.localeCompare(b.nombre);
+            });
+
+            members.forEach((m, index) => {
                 const balance = getBalance(m);
                 totalGlobal += balance;
+                const pos = index + 1;
+                const numberColorClass = m.tipo === 'U' ? 'bg-blue-900 text-white' : 'bg-amber-400 text-black';
 
                 const card = document.createElement('div');
-                card.className = "bg-white p-4 rounded-2xl card-shadow flex items-center gap-4 animate-fade-in border border-transparent active:border-blue-200 transition-all";
+                card.className = "bg-white p-4 rounded-2xl card-shadow flex items-center gap-4 animate-fade-in border-l-4 transition-all " + 
+                                (m.tipo === 'U' ? 'border-blue-900' : 'border-emerald-500');
+                
                 card.innerHTML = `
-                    <div class="flex-shrink-0 w-12 h-12 ${m.tipo === 'U' ? 'bg-blue-900 text-white' : 'bg-amber-500 text-white'} rounded-full flex items-center justify-center font-black shadow-md">
-                        ${m.pos}
+                    <div class="flex-shrink-0 w-12 h-12 ${numberColorClass} rounded-full flex items-center justify-center font-black shadow-md text-sm">
+                        ${pos}
                     </div>
-                    <div class="flex-grow" onclick="openDetails(${m.id})">
+                    <div class="flex-grow cursor-pointer" onclick="openDetails(${m.id})">
                         <p class="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-0.5">${m.rango}</p>
-                        <p class="text-gray-800 font-bold leading-none mb-1 text-sm sm:text-base">${m.nombre}</p>
-                        <p class="text-[10px] ${balance >= 0 ? 'text-blue-600' : 'text-red-600'} font-black uppercase">Saldo: ${balance} Días</p>
+                        <p class="text-gray-800 font-bold leading-tight mb-1 text-sm sm:text-base">${m.nombre}</p>
+                        <p class="text-xs ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'} font-black uppercase tracking-tight">
+                           <span class="text-xl font-black">${balance}</span> Días de Saldo
+                        </p>
                     </div>
-                    <button onclick="speak('${m.rango} ${m.nombre}', ${balance})" class="p-3 bg-gray-50 rounded-xl text-gray-300 hover:text-blue-600 active:scale-90 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
-                    </button>
+                    <div class="flex items-center gap-1">
+                        <button onclick="openEditMemberModal(${m.id})" class="p-2 text-gray-300 hover:text-blue-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button onclick="confirmDeleteMember(${m.id})" class="p-2 text-gray-300 hover:text-red-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
                 `;
                 list.appendChild(card);
             });
+            
             document.getElementById('totalGlobalDays').innerText = totalGlobal;
+            document.getElementById('totalUnitsCount').innerText = members.length;
+        }
+
+        function openMemberModal() {
+            document.getElementById('editMemberId').value = "";
+            document.getElementById('memberModalTitle').innerText = "Nueva Unidad";
+            document.getElementById('newRango').value = "Subteniente";
+            document.getElementById('newNombre').value = "";
+            document.getElementById('tipoContainer').classList.remove('hidden');
+            document.getElementById('memberModal').classList.remove('hidden');
+            document.getElementById('memberModal').classList.add('flex');
+        }
+
+        function openEditMemberModal(id) {
+            const m = members.find(x => x.id === id);
+            document.getElementById('editMemberId').value = m.id;
+            document.getElementById('memberModalTitle').innerText = "Editar Unidad";
+            document.getElementById('newRango').value = m.rango;
+            document.getElementById('newNombre').value = m.nombre;
+            document.getElementById('newTipo').value = m.tipo;
+            document.getElementById('tipoContainer').classList.add('hidden');
+            document.getElementById('memberModal').classList.remove('hidden');
+            document.getElementById('memberModal').classList.add('flex');
+        }
+
+        function saveMember() {
+            const id = document.getElementById('editMemberId').value;
+            const rango = document.getElementById('newRango').value;
+            const nombre = document.getElementById('newNombre').value.trim();
+            const tipo = document.getElementById('newTipo').value;
+
+            if (!rango || !nombre) {
+                showNotification("Completa todos los campos");
+                return;
+            }
+
+            if (id) {
+                const idx = members.findIndex(m => m.id == id);
+                members[idx].rango = rango;
+                members[idx].nombre = nombre;
+                showNotification("Unidad actualizada");
+            } else {
+                const newMember = {
+                    id: Date.now(),
+                    rango,
+                    nombre,
+                    tipo,
+                    eventos: []
+                };
+                members.push(newMember);
+                showNotification("Unidad añadida");
+            }
+
+            saveData();
+            renderMembers();
+            closeModal('memberModal');
+        }
+
+        function confirmDeleteMember(id) {
+            const member = members.find(m => m.id === id);
+            if (confirm(`¿Estás seguro de que deseas eliminar a ${member.nombre}?`)) {
+                members = members.filter(m => m.id !== id);
+                saveData();
+                renderMembers();
+                showNotification("Unidad eliminada");
+            }
         }
 
         function toggleInputs() {
             const type = document.getElementById('eventType').value;
             const extraFields = document.getElementById('extraFields');
-            
             if (type === 'sumar') {
                 extraFields.classList.remove('hidden');
             } else {
@@ -219,101 +376,54 @@
 
         function openDetails(id) {
             currentMemberId = id;
-            resetForm();
+            resetEventForm();
             const m = members.find(x => x.id === id);
             document.getElementById('modalTitle').innerText = m.nombre;
-            document.getElementById('modalSub').innerText = `${m.rango} - Posición ${m.pos}`;
+            document.getElementById('modalSub').innerText = `${m.rango}`;
             renderHistory();
             document.getElementById('eventModal').classList.remove('hidden');
             document.getElementById('eventModal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
         }
 
         function renderHistory() {
             const m = members.find(x => x.id === currentMemberId);
             const container = document.getElementById('historyList');
             container.innerHTML = '';
+            document.getElementById('historyCount').innerText = `${m.eventos.length} registros`;
 
             if (m.eventos.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-300 py-10 text-xs italic font-medium uppercase tracking-widest">Sin movimientos registrados</p>';
+                container.innerHTML = '<div class="py-12 text-center text-gray-300 text-xs italic uppercase tracking-widest">Sin registros</div>';
                 return;
             }
 
-            [...m.eventos].reverse().forEach(ev => {
+            const sortedEvents = [...m.eventos].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+            sortedEvents.forEach(ev => {
                 const item = document.createElement('div');
-                item.className = "p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-start gap-3 relative overflow-hidden";
-                
-                const valColor = ev.type === 'sumar' ? 'text-red-600' : 'text-green-600';
-                const valSign = ev.type === 'sumar' ? '+1' : '-1';
-                const borderSide = ev.type === 'sumar' ? 'border-l-4 border-red-500' : 'border-l-4 border-green-500';
-                item.className += " " + borderSide;
-
-                let fullInfo = "";
-                if (ev.type === 'sumar') {
-                    fullInfo = ev.desc;
-                    if (ev.group) fullInfo += ` | ${ev.group}`;
-                    if (ev.place) fullInfo += ` | ${ev.place}`;
-                } else {
-                    fullInfo = "Día Libre Tomado";
-                }
-
+                const isSum = ev.type === 'sumar';
+                item.className = `p-4 bg-gray-50 rounded-2xl border-l-4 ${isSum ? 'border-emerald-500' : 'border-rose-500'} animate-fade-in`;
                 item.innerHTML = `
-                    <div class="flex-grow space-y-1">
-                        <div class="flex justify-between items-start">
-                            <p class="text-[10px] text-gray-400 font-black uppercase tracking-tighter">${ev.displayDate}</p>
-                            <div class="font-black text-base ${valColor}">${valSign}</div>
+                    <div class="flex justify-between items-start">
+                        <div class="flex-grow">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">${ev.displayDate}</p>
+                            <p class="text-sm font-bold text-gray-800">${isSum ? (ev.desc || "Día Trabajado") : "Día Libre Tomado"}</p>
+                            ${isSum && ev.group ? `<p class="text-[10px] text-gray-500 mt-1">📌 ${ev.group}</p>` : ''}
                         </div>
-                        <p class="text-sm font-bold text-gray-800 leading-tight">
-                            ${fullInfo}
-                        </p>
+                        <div class="flex flex-col items-end gap-3">
+                            <span class="font-black text-sm ${isSum ? 'text-emerald-600' : 'text-rose-600'}">${isSum ? '+1' : '-1'}</span>
+                            <div class="flex gap-2">
+                                <button onclick="startEditEvent('${ev.id}')" class="p-1 text-gray-400 hover:text-blue-600 transition-colors">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                                <button onclick="deleteEvent('${ev.id}')" class="p-1 text-gray-400 hover:text-red-600 transition-colors">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="startEditEvent('${ev.id}')" class="p-2 text-gray-300 hover:text-blue-900 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </button>
                 `;
                 container.appendChild(item);
             });
-        }
-
-        function addOrUpdateEvent() {
-            const type = document.getElementById('eventType').value;
-            const rawDateVal = document.getElementById('eventDate').value;
-
-            if (!rawDateVal) {
-                alert("Por favor selecciona una fecha");
-                return;
-            }
-
-            const desc = type === 'sumar' ? (document.getElementById('eventDesc').value || "Día Trabajado") : "Día Libre Tomado";
-            const group = type === 'sumar' ? document.getElementById('eventGroup').value : "";
-            const place = type === 'sumar' ? document.getElementById('eventPlace').value : "";
-            
-            const displayDate = rawDateVal.split('-').reverse().join('/');
-            const m = members.find(x => x.id === currentMemberId);
-
-            if (currentEditingEventId) {
-                const evIndex = m.eventos.findIndex(e => e.id === currentEditingEventId);
-                m.eventos[evIndex].desc = desc;
-                m.eventos[evIndex].group = group;
-                m.eventos[evIndex].place = place;
-                m.eventos[evIndex].displayDate = displayDate;
-                m.eventos[evIndex].rawDate = rawDateVal;
-                // Preserve original type on edit unless we add logic to change it
-            } else {
-                m.eventos.push({
-                    id: Date.now().toString(),
-                    desc,
-                    group,
-                    place,
-                    type,
-                    displayDate,
-                    rawDate: rawDateVal
-                });
-            }
-
-            saveData();
-            resetForm();
-            renderHistory();
-            renderMembers();
         }
 
         function startEditEvent(eventId) {
@@ -322,40 +432,81 @@
             
             currentEditingEventId = eventId;
             document.getElementById('formActionTitle').innerText = "Editando Registro";
-            document.getElementById('typeSelectorCont').classList.add('hidden');
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
+            document.getElementById('cancelEventEditBtn').classList.remove('hidden');
             
             document.getElementById('eventType').value = ev.type;
+            document.getElementById('eventDate').value = ev.rawDate;
             document.getElementById('eventDesc').value = ev.desc || "";
             document.getElementById('eventGroup').value = ev.group || "";
-            document.getElementById('eventPlace').value = ev.place || "";
-            document.getElementById('eventDate').value = ev.rawDate || "";
             
             toggleInputs();
             document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function resetForm() {
+        function resetEventForm() {
             currentEditingEventId = null;
             document.getElementById('formActionTitle').innerText = "Registrar Movimiento";
-            document.getElementById('typeSelectorCont').classList.remove('hidden');
-            document.getElementById('cancelEditBtn').classList.add('hidden');
+            document.getElementById('cancelEventEditBtn').classList.add('hidden');
+            document.getElementById('eventDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('eventDesc').value = '';
             document.getElementById('eventGroup').value = '';
-            document.getElementById('eventPlace').value = '';
-            document.getElementById('eventDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('eventType').value = 'sumar';
             toggleInputs();
         }
 
-        function closeModal() {
-            document.getElementById('eventModal').classList.add('hidden');
-            document.getElementById('eventModal').classList.remove('flex');
+        function addOrUpdateEvent() {
+            const type = document.getElementById('eventType').value;
+            const rawDateVal = document.getElementById('eventDate').value;
+            if (!rawDateVal) return showNotification("Selecciona fecha");
+            
+            const desc = document.getElementById('eventDesc').value.trim();
+            const group = document.getElementById('eventGroup').value.trim();
+            const m = members.find(x => x.id === currentMemberId);
+
+            if (currentEditingEventId) {
+                const idx = m.eventos.findIndex(e => e.id === currentEditingEventId);
+                m.eventos[idx] = { 
+                    ...m.eventos[idx], 
+                    type, 
+                    rawDate: rawDateVal, 
+                    displayDate: rawDateVal.split('-').reverse().join('/'), 
+                    desc, 
+                    group 
+                };
+                showNotification("Registro actualizado");
+            } else {
+                m.eventos.push({ 
+                    id: Date.now().toString(), 
+                    type, 
+                    rawDate: rawDateVal, 
+                    displayDate: rawDateVal.split('-').reverse().join('/'), 
+                    desc, 
+                    group 
+                });
+                showNotification("Registro guardado");
+            }
+
+            saveData();
+            resetEventForm();
+            renderHistory();
+            renderMembers();
         }
 
-        function speak(name, balance) {
-            const msg = new SpeechSynthesisUtterance(`${name} tiene un saldo de ${balance} días.`);
-            msg.lang = 'es-ES';
-            window.speechSynthesis.speak(msg);
+        function deleteEvent(eventId) {
+            if (confirm("¿Eliminar este registro del historial?")) {
+                const m = members.find(x => x.id === currentMemberId);
+                m.eventos = m.eventos.filter(e => e.id !== eventId);
+                saveData();
+                renderHistory();
+                renderMembers();
+                showNotification("Registro eliminado");
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            document.getElementById(modalId).classList.remove('flex');
+            document.body.style.overflow = 'auto';
         }
 
         function filterList() {
@@ -364,6 +515,21 @@
             for (let card of cards) {
                 card.style.display = card.innerText.toLowerCase().includes(search) ? "flex" : "none";
             }
+        }
+
+        function showNotification(msg) {
+            const el = document.getElementById('notification');
+            el.innerText = msg;
+            el.classList.remove('opacity-0');
+            setTimeout(() => el.classList.add('opacity-0'), 2000);
+        }
+
+        function downloadBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(members));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `voces_cuerdas_respaldo_${new Date().toISOString().slice(0,10)}.json`);
+            dl.click();
         }
 
         window.onload = renderMembers;
