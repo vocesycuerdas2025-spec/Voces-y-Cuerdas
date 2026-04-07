@@ -1,9 +1,15 @@
-<!DOCTYPE html>
+<!DOCTYPE html>"href", dataStr);
+            dl.setAttribute("download", `respaldo_voces_y_cuerdas_${new Date().toISOString().slice(0,10)}.json`);
+            dl.click();
+        }
+
+        window.o
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Voces y Cuerdas - Control Administrativo</title>
+    <!-- Tailwind CSS para el diseño responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -28,6 +34,7 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* Personalización de scroll para móviles */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -42,7 +49,7 @@
 </head>
 <body class="pb-24">
 
-    <!-- Header -->
+    <!-- Cabecera Principal -->
     <header class="header-gradient text-white p-6 rounded-b-3xl shadow-lg mb-6">
         <div class="flex justify-between items-center">
             <div>
@@ -61,20 +68,20 @@
     </header>
 
     <main class="px-4 max-w-lg mx-auto">
-        <!-- Botón Añadir Integrante -->
+        <!-- Acción: Nueva Unidad -->
         <button onclick="openMemberModal()" class="w-full mb-6 p-4 bg-blue-900 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             Añadir Nueva Unidad
         </button>
 
-        <!-- Buscador -->
+        <!-- Filtro de Búsqueda -->
         <div class="mb-6">
             <input type="text" id="searchInput" placeholder="Buscar unidad o rango..." 
                 class="w-full p-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 onkeyup="filterList()">
         </div>
 
-        <!-- Estadísticas Globales -->
+        <!-- Indicadores Globales -->
         <div class="grid grid-cols-2 gap-4 mb-6 text-center">
             <div class="bg-white p-4 rounded-2xl card-shadow border-t-4 border-blue-900">
                 <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest">Total Unidades</p>
@@ -86,18 +93,16 @@
             </div>
         </div>
 
-        <!-- Lista de Integrantes -->
-        <div id="memberList" class="space-y-4">
-            <!-- Los elementos se inyectan mediante JS -->
-        </div>
+        <!-- Listado Dinámico -->
+        <div id="memberList" class="space-y-4"></div>
     </main>
 
-    <!-- Notificaciones -->
+    <!-- Notificación -->
     <div id="notification" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl opacity-0 pointer-events-none transition-all z-[100]">
         Mensaje
     </div>
 
-    <!-- Modal de Detalles e Historial -->
+    <!-- Modal: Historial y Movimientos -->
     <div id="eventModal" class="fixed inset-0 bg-black/60 hidden flex-col justify-end sm:justify-center p-0 sm:p-4 z-50 overflow-hidden">
         <div class="bg-white w-full max-w-lg mx-auto rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh]">
             <div class="p-6 border-b border-gray-100 flex justify-between items-start">
@@ -110,7 +115,7 @@
                 </button>
             </div>
             <div class="overflow-y-auto p-6 flex-grow">
-                <!-- Formulario de Movimiento (Añadir/Editar) -->
+                <!-- Formulario de Movimiento -->
                 <div id="formSection" class="bg-blue-50 p-4 rounded-2xl mb-6 border border-blue-100">
                     <h3 id="formActionTitle" class="text-xs font-black text-blue-800 mb-4 uppercase tracking-widest">Registrar Movimiento</h3>
                     <div class="space-y-4">
@@ -121,8 +126,8 @@
                         <div class="grid grid-cols-1 gap-3">
                             <input type="date" id="eventDate" class="w-full p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
                             <div id="extraFields" class="space-y-3">
-                                <input type="text" id="eventDesc" placeholder="Detalle del Evento (Ej: Acto Protocolar)" class="w-full p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
-                                <input type="text" id="eventGroup" placeholder="Agrupación (Ej: Orquesta, Cuarteto)" class="w-full p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                                <input type="text" id="eventDesc" placeholder="Detalle (Ej: Gala Aniversario)" class="w-full p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                                <input type="text" id="eventGroup" placeholder="Agrupación (Ej: Orquesta)" class="w-full p-3 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
                             </div>
                         </div>
                         <div class="flex gap-2 pt-2">
@@ -133,10 +138,10 @@
                         </div>
                     </div>
                 </div>
-                <!-- Lista de Historial -->
+                <!-- Listado Histórico -->
                 <div>
                     <h3 class="text-xs font-black text-gray-400 mb-3 uppercase tracking-widest flex justify-between">
-                        <span>Historial Detallado</span>
+                        <span>Historial de Actividad</span>
                         <span id="historyCount" class="text-blue-600">0 registros</span>
                     </h3>
                     <div id="historyList" class="space-y-3 pb-6"></div>
@@ -145,7 +150,7 @@
         </div>
     </div>
 
-    <!-- Modal para Añadir/Editar Integrante -->
+    <!-- Modal: Gestión de Unidades -->
     <div id="memberModal" class="fixed inset-0 bg-black/60 hidden flex-col justify-end sm:justify-center p-0 sm:p-4 z-50 overflow-hidden">
         <div class="bg-white w-full max-w-md mx-auto rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center">
@@ -189,19 +194,13 @@
         </div>
     </div>
 
+    <!-- Lógica de Negocio -->
     <script>
-        // Mapa de Jerarquía para el ordenamiento (Peso menor = Mayor jerarquía)
+        // Pesos para el orden jerárquico (Menor peso = Mayor rango)
         const jerarquiaPesos = {
-            "Mayor": 1,
-            "Capitán": 2,
-            "Teniente": 3,
-            "Subteniente": 4,
-            "Sargento 1ro.": 5,
-            "Sargento 2do.": 6,
-            "Cabo 1ro.": 7,
-            "Cabo 2do.": 8,
-            "Agente": 9,
-            "M.N.J.": 10
+            "Mayor": 1, "Capitán": 2, "Teniente": 3, "Subteniente": 4,
+            "Sargento 1ro.": 5, "Sargento 2do.": 6, "Cabo 1ro.": 7,
+            "Cabo 2do.": 8, "Agente": 9, "M.N.J.": 10
         };
 
         const defaultMembers = [
@@ -223,7 +222,7 @@
             { id: 16, rango: "M.N.J.", nombre: "Carlos Ramos", tipo: "C", eventos: [] },
             { id: 17, rango: "M.N.J.", nombre: "Carlos Berna", tipo: "C", eventos: [] },
             { id: 18, rango: "M.N.J.", nombre: "Felipe Pineda", tipo: "C", eventos: [] },
-            { id: 19, rango: "M.N.J.", nombre: "Jonathan Martinez", tipo: "C", eventos: [] },
+            { id: 19, rango: "M.N.J.", nombre: "Jonathan Martinez", tipo: "C", eventos: [] }
         ];
 
         let members = JSON.parse(localStorage.getItem('vocesCuerdasData')) || defaultMembers;
@@ -231,15 +230,11 @@
         let currentEditingEventId = null;
 
         function saveData() {
-            // Antes de guardar, siempre ordenamos por jerarquía
+            // Ordenar antes de guardar: Por rango y luego por nombre
             members.sort((a, b) => {
                 const pesoA = jerarquiaPesos[a.rango] || 99;
                 const pesoB = jerarquiaPesos[b.rango] || 99;
-                
-                // Si tienen diferente jerarquía, ordenar por el peso definido
                 if (pesoA !== pesoB) return pesoA - pesoB;
-                
-                // Si tienen la misma jerarquía, ordenar alfabéticamente por nombre
                 return a.nombre.localeCompare(b.nombre);
             });
             localStorage.setItem('vocesCuerdasData', JSON.stringify(members));
@@ -253,14 +248,6 @@
             const list = document.getElementById('memberList');
             list.innerHTML = '';
             let totalGlobal = 0;
-
-            // Aseguramos que la lista esté ordenada al renderizar
-            members.sort((a, b) => {
-                const pesoA = jerarquiaPesos[a.rango] || 99;
-                const pesoB = jerarquiaPesos[b.rango] || 99;
-                if (pesoA !== pesoB) return pesoA - pesoB;
-                return a.nombre.localeCompare(b.nombre);
-            });
 
             members.forEach((m, index) => {
                 const balance = getBalance(m);
@@ -279,8 +266,9 @@
                     <div class="flex-grow cursor-pointer" onclick="openDetails(${m.id})">
                         <p class="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-0.5">${m.rango}</p>
                         <p class="text-gray-800 font-bold leading-tight mb-1 text-sm sm:text-base">${m.nombre}</p>
-                        <p class="text-xs ${balance >= 0 ? 'text-emerald-600' : 'text-rose-600'} font-black uppercase tracking-tight">
-                           <span class="text-xl font-black">${balance}</span> Días de Saldo
+                        <p class="text-xs font-black uppercase tracking-tight">
+                           <span class="text-xl text-emerald-600">${balance}</span> 
+                           <span class="text-gray-900">Días de Saldo</span>
                         </p>
                     </div>
                     <div class="flex items-center gap-1">
@@ -327,26 +315,16 @@
             const nombre = document.getElementById('newNombre').value.trim();
             const tipo = document.getElementById('newTipo').value;
 
-            if (!rango || !nombre) {
-                showNotification("Completa todos los campos");
-                return;
-            }
+            if (!nombre) return showNotification("Ingresa un nombre");
 
             if (id) {
                 const idx = members.findIndex(m => m.id == id);
                 members[idx].rango = rango;
                 members[idx].nombre = nombre;
-                showNotification("Unidad actualizada");
+                showNotification("Actualizado correctamente");
             } else {
-                const newMember = {
-                    id: Date.now(),
-                    rango,
-                    nombre,
-                    tipo,
-                    eventos: []
-                };
-                members.push(newMember);
-                showNotification("Unidad añadida");
+                members.push({ id: Date.now(), rango, nombre, tipo, eventos: [] });
+                showNotification("Añadido correctamente");
             }
 
             saveData();
@@ -356,7 +334,7 @@
 
         function confirmDeleteMember(id) {
             const member = members.find(m => m.id === id);
-            if (confirm(`¿Estás seguro de que deseas eliminar a ${member.nombre}?`)) {
+            if (confirm(`¿Eliminar definitivamente a ${member.nombre}?`)) {
                 members = members.filter(m => m.id !== id);
                 saveData();
                 renderMembers();
@@ -367,11 +345,7 @@
         function toggleInputs() {
             const type = document.getElementById('eventType').value;
             const extraFields = document.getElementById('extraFields');
-            if (type === 'sumar') {
-                extraFields.classList.remove('hidden');
-            } else {
-                extraFields.classList.add('hidden');
-            }
+            extraFields.classList.toggle('hidden', type !== 'sumar');
         }
 
         function openDetails(id) {
@@ -379,7 +353,7 @@
             resetEventForm();
             const m = members.find(x => x.id === id);
             document.getElementById('modalTitle').innerText = m.nombre;
-            document.getElementById('modalSub').innerText = `${m.rango}`;
+            document.getElementById('modalSub').innerText = m.rango;
             renderHistory();
             document.getElementById('eventModal').classList.remove('hidden');
             document.getElementById('eventModal').classList.add('flex');
@@ -393,15 +367,16 @@
             document.getElementById('historyCount').innerText = `${m.eventos.length} registros`;
 
             if (m.eventos.length === 0) {
-                container.innerHTML = '<div class="py-12 text-center text-gray-300 text-xs italic uppercase tracking-widest">Sin registros</div>';
+                container.innerHTML = '<div class="py-12 text-center text-gray-300 text-xs italic uppercase tracking-widest">Sin actividad</div>';
                 return;
             }
 
-            const sortedEvents = [...m.eventos].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
-            sortedEvents.forEach(ev => {
+            // Ordenar eventos por fecha descendente
+            [...m.eventos].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate)).forEach(ev => {
                 const item = document.createElement('div');
                 const isSum = ev.type === 'sumar';
-                item.className = `p-4 bg-gray-50 rounded-2xl border-l-4 ${isSum ? 'border-emerald-500' : 'border-rose-500'} animate-fade-in`;
+                // Colores del historial: Rojo para +1 y Verde para -1
+                item.className = `p-4 bg-gray-50 rounded-2xl border-l-4 ${isSum ? 'border-rose-500' : 'border-emerald-500'} animate-fade-in`;
                 item.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div class="flex-grow">
@@ -410,7 +385,7 @@
                             ${isSum && ev.group ? `<p class="text-[10px] text-gray-500 mt-1">📌 ${ev.group}</p>` : ''}
                         </div>
                         <div class="flex flex-col items-end gap-3">
-                            <span class="font-black text-sm ${isSum ? 'text-emerald-600' : 'text-rose-600'}">${isSum ? '+1' : '-1'}</span>
+                            <span class="font-black text-sm ${isSum ? 'text-rose-600' : 'text-emerald-600'}">${isSum ? '+1' : '-1'}</span>
                             <div class="flex gap-2">
                                 <button onclick="startEditEvent('${ev.id}')" class="p-1 text-gray-400 hover:text-blue-600 transition-colors">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -429,16 +404,13 @@
         function startEditEvent(eventId) {
             const m = members.find(x => x.id === currentMemberId);
             const ev = m.eventos.find(e => e.id === eventId);
-            
             currentEditingEventId = eventId;
             document.getElementById('formActionTitle').innerText = "Editando Registro";
             document.getElementById('cancelEventEditBtn').classList.remove('hidden');
-            
             document.getElementById('eventType').value = ev.type;
             document.getElementById('eventDate').value = ev.rawDate;
             document.getElementById('eventDesc').value = ev.desc || "";
             document.getElementById('eventGroup').value = ev.group || "";
-            
             toggleInputs();
             document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
         }
@@ -457,35 +429,19 @@
         function addOrUpdateEvent() {
             const type = document.getElementById('eventType').value;
             const rawDateVal = document.getElementById('eventDate').value;
-            if (!rawDateVal) return showNotification("Selecciona fecha");
-            
+            if (!rawDateVal) return showNotification("Selecciona una fecha");
             const desc = document.getElementById('eventDesc').value.trim();
             const group = document.getElementById('eventGroup').value.trim();
             const m = members.find(x => x.id === currentMemberId);
 
             if (currentEditingEventId) {
                 const idx = m.eventos.findIndex(e => e.id === currentEditingEventId);
-                m.eventos[idx] = { 
-                    ...m.eventos[idx], 
-                    type, 
-                    rawDate: rawDateVal, 
-                    displayDate: rawDateVal.split('-').reverse().join('/'), 
-                    desc, 
-                    group 
-                };
-                showNotification("Registro actualizado");
+                m.eventos[idx] = { ...m.eventos[idx], type, rawDate: rawDateVal, displayDate: rawDateVal.split('-').reverse().join('/'), desc, group };
+                showNotification("Actualizado");
             } else {
-                m.eventos.push({ 
-                    id: Date.now().toString(), 
-                    type, 
-                    rawDate: rawDateVal, 
-                    displayDate: rawDateVal.split('-').reverse().join('/'), 
-                    desc, 
-                    group 
-                });
-                showNotification("Registro guardado");
+                m.eventos.push({ id: Date.now().toString(), type, rawDate: rawDateVal, displayDate: rawDateVal.split('-').reverse().join('/'), desc, group });
+                showNotification("Guardado");
             }
-
             saveData();
             resetEventForm();
             renderHistory();
@@ -493,7 +449,7 @@
         }
 
         function deleteEvent(eventId) {
-            if (confirm("¿Eliminar este registro del historial?")) {
+            if (confirm("¿Eliminar este registro?")) {
                 const m = members.find(x => x.id === currentMemberId);
                 m.eventos = m.eventos.filter(e => e.id !== eventId);
                 saveData();
@@ -519,20 +475,14 @@
 
         function showNotification(msg) {
             const el = document.getElementById('notification');
-            el.innerText = msg;
-            el.classList.remove('opacity-0');
+            el.innerText = msg; el.classList.remove('opacity-0');
             setTimeout(() => el.classList.add('opacity-0'), 2000);
         }
 
         function downloadBackup() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(members));
             const dl = document.createElement('a');
-            dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", `voces_cuerdas_respaldo_${new Date().toISOString().slice(0,10)}.json`);
-            dl.click();
-        }
-
-        window.onload = renderMembers;
+            dl.setAttribute(nload = renderMembers;
     </script>
 </body>
 </html>
