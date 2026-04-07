@@ -1,9 +1,4 @@
-<!DOCTYPE html>"href", dataStr);
-            dl.setAttribute("download", `respaldo_voces_y_cuerdas_${new Date().toISOString().slice(0,10)}.json`);
-            dl.click();
-        }
-
-        window.o
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -482,7 +477,12 @@
         function downloadBackup() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(members));
             const dl = document.createElement('a');
-            dl.setAttribute(nload = renderMembers;
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `respaldo_voces_y_cuerdas_${new Date().toISOString().slice(0,10)}.json`);
+            dl.click();
+        }
+
+        window.onload = renderMembers;
     </script>
 </body>
 </html>
